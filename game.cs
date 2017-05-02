@@ -13,6 +13,7 @@ class Game
 {
         OpenTKApp app;
         KeyboardState KeyPress, PrevKeyPress;
+        float a;
         // member variables
         public Surface screen;
         public Game(OpenTKApp app)
@@ -22,23 +23,24 @@ class Game
 	    // initialize
 	    public void Init()
         {
+            a = 0f;
         }
 
 	    // tick: renders one frame
         public void Tick()
 	    {
-
+            a += 0.1f;
 	    }
 
         public void RenderGL()
         {
-
             GL.Color3(1.0f, 0.0f, 0.0f);
             GL.Begin(PrimitiveType.Triangles);
             GL.Vertex3(-0.5f, -0.5f, 0);
             GL.Vertex3(0.5f, -0.5f, 0);
             GL.Vertex3(-0.5f, 0.5f, 0);
-            GL.End();
+            GL.End();            Console.WriteLine(a);
+
         }
 
         int CalculateColor(int r, int g, int b)

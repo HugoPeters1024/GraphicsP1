@@ -46,9 +46,11 @@ namespace Template
 		protected override void OnRenderFrame( FrameEventArgs e )
 		{
             // prepare for generic OpenGL rendering
+            GL.ClearColor(Color.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.Disable(EnableCap.Texture2D);
             GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Color3(1.0f, 1.0f, 1.0f);
             // called once per frame; render
             game.Tick();
 			if (terminated) 
@@ -64,19 +66,18 @@ namespace Template
 						   PixelType.UnsignedByte, game.screen.pixels 
 						 );
 			// clear window contents
-			GL.Clear( ClearBufferMask.ColorBufferBit );
+			//GL.Clear( ClearBufferMask.ColorBufferBit);
 			// setup camera
 			GL.MatrixMode( MatrixMode.Modelview );
 			GL.LoadIdentity();
-			GL.MatrixMode( MatrixMode.Projection );
-			GL.LoadIdentity();
 			// draw screen filling quad
-			GL.Begin( PrimitiveType.Quads );
+            
+			/*GL.Begin( PrimitiveType.Quads );
 			GL.TexCoord2( 0.0f, 1.0f ); GL.Vertex2( -1.0f, -1.0f );
 			GL.TexCoord2( 1.0f, 1.0f ); GL.Vertex2(  1.0f, -1.0f );
 			GL.TexCoord2( 1.0f, 0.0f ); GL.Vertex2(  1.0f,  1.0f );
 			GL.TexCoord2( 0.0f, 0.0f ); GL.Vertex2( -1.0f,  1.0f );
-			GL.End();
+			GL.End(); */
 
             //Run the game GL
             game.RenderGL();
