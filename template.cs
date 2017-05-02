@@ -79,7 +79,7 @@ namespace Template
 			GL.End();
 
             //Run the game GL
-            game.RenderGl();
+            game.RenderGL();
 			// tell OpenTK we're done rendering
 			SwapBuffers();
 		}

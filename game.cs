@@ -30,7 +30,7 @@ class Game
 
 	    }
 
-        public void RenderGl()
+        public void RenderGL()
         {
 
             GL.Color3(1.0f, 0.0f, 0.0f);
