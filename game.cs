@@ -14,6 +14,10 @@ class Game
         OpenTKApp app;
         KeyboardState KeyPress, PrevKeyPress;
         float a;
+        Surface map;
+        float[,] h;
+
+
         // member variables
         public Surface screen;
         public Game(OpenTKApp app)
@@ -24,23 +28,66 @@ class Game
 	    public void Init()
         {
             a = 0f;
+            map = new Surface("../../assets/heightmap3.png");
+            h = new float[map.width, map.height];
+            for (int y = 0; y < map.height; ++y)
+                for (int x = 0; x < map.width; ++x)
+                    h[x, y] = ((float)(map.pixels[x + map.width * y] & 255)) / 256f;
         }
 
 	    // tick: renders one frame
         public void Tick()
 	    {
-            a += 0.1f;
+            a += 0.01f;
 	    }
 
         public void RenderGL()
         {
-            GL.Color3(1.0f, 0.0f, 0.0f);
-            GL.Begin(PrimitiveType.Triangles);
-            GL.Vertex3(-0.5f, -0.5f, 0);
-            GL.Vertex3(0.5f, -0.5f, 0);
-            GL.Vertex3(-0.5f, 0.5f, 0);
-            GL.End();            Console.WriteLine(a);
+            GL.PushMatrix();
 
+            GL.Scale(new Vector3(0.75f));
+            GL.Translate(0, -0.4f, 0);
+            GL.Rotate(-130, 1, 0, 0);
+            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+
+            float s = 1f / 128f;
+            for (int y = 0; y < map.width-1; ++y)
+                for (int x = 0; x < map.height-1; ++x)
+                {
+                    switch(y % 3)
+                    {
+                        case 0: GL.Color3(1f, 0, 0); break;
+                        case 1: GL.Color3(0, 1f, 0); break;
+                        case 2: GL.Color3(0, 0, 1f); break;
+                    }
+
+                    float xc = -1f + x * s;
+                    float yc = -1f + y * s;
+                    GL.Begin(PrimitiveType.Quads);
+                    GL.Vertex3(xc, yc, h[x,y]);
+                    GL.Vertex3(xc, yc - s, h[x,y]);
+                    GL.Vertex3(xc - s, yc - s, h[x+1,y]);
+                    GL.Vertex3(xc - s, yc, h[x+1,y]);
+                    GL.End();
+
+                    GL.Begin(PrimitiveType.Quads);
+                    GL.Vertex3(xc - s, yc - s, h[x, y]);
+                    GL.Vertex3(xc, yc - s, h[x, y]);
+                    GL.Vertex3(xc, yc, h[x, y + 1]);
+                    GL.Vertex3(xc - s, yc, h[x, y + 1]);
+                    GL.End();
+                }
+
+
+
+            GL.PopMatrix();
+            //var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+            //GL.LoadMatrix(ref M);
+            //GL.Translate(0, 0, -1);
+            //GL.Rotate(110, 1, 0, 0);
+            //GL.Rotate(a * 180.0 / Math.PI, 0, 0, 1);
+
+           // Console.WriteLine(a);
         }
 
         int CalculateColor(int r, int g, int b)

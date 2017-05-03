@@ -49,7 +49,8 @@ namespace Template
             GL.ClearColor(Color.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.Disable(EnableCap.Texture2D);
-            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.LoadIdentity();
             GL.Color3(1.0f, 1.0f, 1.0f);
             // called once per frame; render
             game.Tick();
@@ -59,25 +60,28 @@ namespace Template
 				return;
 			}
 			// convert Game.screen to OpenGL texture
-			GL.BindTexture( TextureTarget.Texture2D, screenID );
-			GL.TexImage2D( TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 
-						   game.screen.width, game.screen.height, 0, 
-						   OpenTK.Graphics.OpenGL.PixelFormat.Bgra, 
-						   PixelType.UnsignedByte, game.screen.pixels 
-						 );
-			// clear window contents
-			//GL.Clear( ClearBufferMask.ColorBufferBit);
-			// setup camera
-			GL.MatrixMode( MatrixMode.Modelview );
-			GL.LoadIdentity();
-			// draw screen filling quad
-            
-			/*GL.Begin( PrimitiveType.Quads );
-			GL.TexCoord2( 0.0f, 1.0f ); GL.Vertex2( -1.0f, -1.0f );
-			GL.TexCoord2( 1.0f, 1.0f ); GL.Vertex2(  1.0f, -1.0f );
-			GL.TexCoord2( 1.0f, 0.0f ); GL.Vertex2(  1.0f,  1.0f );
-			GL.TexCoord2( 0.0f, 0.0f ); GL.Vertex2( -1.0f,  1.0f );
-			GL.End(); */
+			//GL.BindTexture( TextureTarget.Texture2D, screenID );
+			//GL.TexImage2D( TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 
+						   //game.screen.width, game.screen.height, 0, 
+						   //OpenTK.Graphics.OpenGL.PixelFormat.Bgra, 
+						  // PixelType.UnsignedByte, game.screen.pixels 
+						// );
+            // clear window contents
+            GL.Clear( ClearBufferMask.ColorBufferBit);
+            // setup camera
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadIdentity();
+            // draw screen filling quad
+
+            /*
+            GL.Color3(0f, 0f, 0f);
+			GL.Begin( PrimitiveType.Quads );
+			GL.Vertex2( -1.0f, -1.0f );
+			GL.Vertex2(  1.0f, -1.0f );
+			GL.Vertex2(  1.0f,  1.0f );
+			GL.Vertex2( -1.0f,  1.0f );
+			GL.End();
+            */
 
             //Run the game GL
             game.RenderGL();
