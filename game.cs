@@ -16,6 +16,8 @@ class Game
         float a;
         Surface map;
         float[,] h;
+        float[] vertexData;
+        int VBO;
 
 
         // member variables
@@ -28,11 +30,23 @@ class Game
 	    public void Init()
         {
             a = 0f;
-            map = new Surface("../../assets/heightmap3.png");
+            map = new Surface("../../assets/heightmap.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
                     h[x, y] = ((float)(map.pixels[x + map.width * y] & 255)) / 256f;
+
+            vertexData = new float[(map.width-1) * (map.height-1) * 2 * 3 * 3];
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BufferData<float>(
+                BufferTarget.ArrayBuffer,
+                (IntPtr)(vertexData.Length * 4),
+                vertexData,
+                BufferUsageHint.StaticDraw
+            );
+            GL.EnableClientState(ArrayCap.VertexArray);
+            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
         }
 
 	    // tick: renders one frame
@@ -43,51 +57,74 @@ class Game
 
         public void RenderGL()
         {
-            GL.PushMatrix();
+            int i = 0;
 
-            GL.Scale(new Vector3(0.75f));
-            GL.Translate(0, -0.4f, 0);
-            GL.Rotate(-130, 1, 0, 0);
-            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
-
-            float s = 1f / 128f;
-            for (int y = 0; y < map.width-1; ++y)
-                for (int x = 0; x < map.height-1; ++x)
+            float s = 2f / map.width;
+            for (int y = 0; y < map.height - 1; ++y)
+                for (int x = 0; x < map.width - 1; ++x)
                 {
-                    switch(y % 3)
-                    {
-                        case 0: GL.Color3(1f, 0, 0); break;
-                        case 1: GL.Color3(0, 1f, 0); break;
-                        case 2: GL.Color3(0, 0, 1f); break;
-                    }
-
                     float xc = -1f + x * s;
                     float yc = -1f + y * s;
+
+                    int index = (x + (map.width - 1) * y);
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc - s;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc - s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc - s;
+                    vertexData[i++] = yc - s;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc - s;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc - s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    /*
+                    GL.Color3(0.5f, 0.25f, 0.75f);
+                    GL.Begin(PrimitiveType.Quads);
+                    GL.Vertex3(xc, yc, h[x, y]);
+                    GL.Vertex3(xc, yc - s, h[x, y]);
+                    GL.Vertex3(xc - s, yc - s, h[x, y]);
+                    GL.Vertex3(xc - s, yc, h[x, y]);
+                    GL.End();
+
+                    GL.Color3(1f, 0, 0);
                     GL.Begin(PrimitiveType.Quads);
                     GL.Vertex3(xc, yc, h[x,y]);
-                    GL.Vertex3(xc, yc - s, h[x,y]);
-                    GL.Vertex3(xc - s, yc - s, h[x+1,y]);
-                    GL.Vertex3(xc - s, yc, h[x+1,y]);
+                    GL.Vertex3(xc, yc -s, h[x,y]);
+                    GL.Vertex3(xc, yc - s, h[x+1,y]);
+                    GL.Vertex3(xc, yc, h[x+1,y]);
                     GL.End();
 
+
+                    GL.Color3(0.5f, 0, 0);
                     GL.Begin(PrimitiveType.Quads);
-                    GL.Vertex3(xc - s, yc - s, h[x, y]);
-                    GL.Vertex3(xc, yc - s, h[x, y]);
-                    GL.Vertex3(xc, yc, h[x, y + 1]);
+                    GL.Vertex3(xc, yc, h[x, y]);
+                    GL.Vertex3(xc - s, yc, h[x, y]);
                     GL.Vertex3(xc - s, yc, h[x, y + 1]);
-                    GL.End();
+                    GL.Vertex3(xc, yc, h[x, y + 1]);
+                    GL.End(); */
                 }
+            Console.WriteLine(i);
 
-
-
+            GL.PushMatrix();
+            GL.Rotate(150, 1f, 0f, 0f);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);
             GL.PopMatrix();
-            //var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
-            //GL.LoadMatrix(ref M);
-            //GL.Translate(0, 0, -1);
-            //GL.Rotate(110, 1, 0, 0);
-            //GL.Rotate(a * 180.0 / Math.PI, 0, 0, 1);
-
-           // Console.WriteLine(a);
         }
 
         int CalculateColor(int r, int g, int b)
