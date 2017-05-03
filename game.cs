@@ -16,8 +16,8 @@ class Game
         float a;
         Surface map;
         float[,] h;
-        float[] vertexData;
-        int VBO;
+        float[] vertexData, colorData;
+        int VBO, CBO;
 
 
         // member variables
@@ -30,14 +30,55 @@ class Game
 	    public void Init()
         {
             a = 0f;
-            map = new Surface("../../assets/heightmap.png");
+            map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
                     h[x, y] = ((float)(map.pixels[x + map.width * y] & 255)) / 256f;
 
-            vertexData = new float[(map.width-1) * (map.height-1) * 2 * 3 * 3];
+
+            float[] myvertices = new float[18]
+{
+             -1.0f, -1.0f, 0.0f,
+             1.0f, -1.0f, 0.0f,
+             0.0f, 1.0f, 0.0f,
+            -1.0f, -1.0f, 0.0f,
+            1f, -1.0f, 0.0f,
+             -1.0f, 2.0f, 0.0f
+};
+            vertexData = new float[(map.width - 1) * (map.height - 1) * 4 * 3 * 3];
+            colorData = new float[(map.width - 1) * (map.height - 1) * 4 * 3 * 3];
+            for (int z = 0; z < colorData.Length; ++z)
+                colorData[z] = 1f;
+            int i = 0;
+            for (int y = 0; y < map.height - 1; ++y)
+                for (int x = 0; x < map.width - 1; ++x)
+                    for (int n=0; n<3; ++n)
+                        for (int v = 0; v < 4; ++v)
+                        {
+                        switch(n%3)
+                        {
+                            case 0:
+                                colorData[i++] = 0f;
+                                colorData[i++] = 0f;
+                                colorData[i++] = 0.65f;
+                                break;
+
+                            case 1:
+                                colorData[i++] = 1f;
+                                colorData[i++] = 0f;
+                                colorData[i++] = 0f;
+                                break;
+
+                            case 2:
+                                colorData[i++] = 0.5f;
+                                colorData[i++] = 0f;
+                                colorData[i++] = 0f;
+                                break;
+                        }
+                     }
             VBO = GL.GenBuffer();
+            CBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.BufferData<float>(
                 BufferTarget.ArrayBuffer,
@@ -46,7 +87,16 @@ class Game
                 BufferUsageHint.StaticDraw
             );
             GL.EnableClientState(ArrayCap.VertexArray);
+            GL.EnableClientState(ArrayCap.ColorArray);
             GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, CBO);
+            GL.BufferData<float>(
+                BufferTarget.ArrayBuffer,
+                (IntPtr)(colorData.Length * 4),
+                colorData,
+               BufferUsageHint.StaticDraw
+            );
+           GL.ColorPointer(3, ColorPointerType.Float, 12, 0);
         }
 
 	    // tick: renders one frame
@@ -66,8 +116,7 @@ class Game
                     float xc = -1f + x * s;
                     float yc = -1f + y * s;
 
-                    int index = (x + (map.width - 1) * y);
-
+                    //TOP
                     vertexData[i++] = xc;
                     vertexData[i++] = yc;
                     vertexData[i++] = h[x, y];
@@ -77,20 +126,13 @@ class Game
                     vertexData[i++] = h[x, y];
 
                     vertexData[i++] = xc - s;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc - s;
-                    vertexData[i++] = yc - s;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc;
                     vertexData[i++] = yc - s;
                     vertexData[i++] = h[x, y];
 
                     vertexData[i++] = xc - s;
                     vertexData[i++] = yc;
                     vertexData[i++] = h[x, y];
+
 
                     /*
                     GL.Color3(0.5f, 0.25f, 0.75f);
@@ -107,9 +149,26 @@ class Game
                     GL.Vertex3(xc, yc -s, h[x,y]);
                     GL.Vertex3(xc, yc - s, h[x+1,y]);
                     GL.Vertex3(xc, yc, h[x+1,y]);
-                    GL.End();
+                    GL.End(); */
 
+                    //SIDE ONE
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
 
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc - s;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc - s;
+                    vertexData[i++] = h[x + 1, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x+1, y];
+
+                    /*
                     GL.Color3(0.5f, 0, 0);
                     GL.Begin(PrimitiveType.Quads);
                     GL.Vertex3(xc, yc, h[x, y]);
@@ -117,14 +176,43 @@ class Game
                     GL.Vertex3(xc - s, yc, h[x, y + 1]);
                     GL.Vertex3(xc, yc, h[x, y + 1]);
                     GL.End(); */
+
+                   // SIDE TWO
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc - s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc - s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y + 1];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y + 1];
                 }
-            Console.WriteLine(i);
+            Console.WriteLine(GL.GetError());
+
 
             GL.PushMatrix();
-            GL.Rotate(150, 1f, 0f, 0f);
+            GL.Scale(new Vector3(0.75f));
+            GL.Translate(0, -0.4f, 0);
+            GL.Rotate(-130, 1, 0, 0);
+            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);
+            GL.BufferData<float>(
+                BufferTarget.ArrayBuffer,
+                (IntPtr)(vertexData.Length * 4),
+                vertexData,
+                BufferUsageHint.StaticDraw
+            );
+            GL.DrawArrays(PrimitiveType.Quads, 0, (map.width-1) * (map.height-1) * 4 * 3);
             GL.PopMatrix();
+
         }
 
         int CalculateColor(int r, int g, int b)
