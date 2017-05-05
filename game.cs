@@ -17,7 +17,16 @@ class Game
         Surface map;
         float[,] h;
         float[] vertexData, colorData;
-        int VBO, CBO;
+
+        int programID;
+        int vsID, fsID;
+        int attribute_vpos, 
+            attribute_vcol, 
+            uniform_mview;
+        int vbo_pos,
+            vbo_col;
+
+        Matrix4 M;
 
 
         // member variables
@@ -29,80 +38,69 @@ class Game
 	    // initialize
 	    public void Init()
         {
-            a = 0f;
+            a = 0f; //Transformation angle
             map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
                     h[x, y] = ((float)(map.pixels[x + map.width * y] & 255)) / 256f;
 
-            vertexData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3];
-            colorData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3];
-            for (int z = 0; z < colorData.Length; ++z)
-                colorData[z] = 1f;
+            vertexData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3]; //2 triangles * 3 vertices * 3 coordinates
+            colorData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3];  //2 traingles * 3 vertices * 3 color values
+
+            //Fill the color array
             int i = 0;
             for (int y = 0; y < map.height - 1; ++y)
                 for (int x = 0; x < map.width - 1; ++x)
-                    for (int n=0; n<2; ++n)
-                        for (int v = 0; v < 3; ++v)
+                    for (int n=0; n<2; ++n)   //Two triangles
+                        for (int v = 0; v < 3; ++v) //Three vertices
                         {
-                        switch((n)%2==0)
+                        switch((x^y)%2 == 0) //For a nice pattern to be able to distinct the model spacially
                         {
-                            case false:
+                            case false:  //Sometimes purple
                                 colorData[i++] = 0.4f;
                                 colorData[i++] = 0f;
                                 colorData[i++] = 0.6f;
                                 break;
 
-                            case true:
+                            case true:  //Sometimes red
                                 colorData[i++] = 1f;
                                 colorData[i++] = 0f;
                                 colorData[i++] = 0f;
                                 break;
                         }
                      }
-            VBO = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData<float>(
-                BufferTarget.ArrayBuffer,
-                (IntPtr)(vertexData.Length * 4),
-                vertexData,
-                BufferUsageHint.StaticDraw
-            );
-            GL.EnableClientState(ArrayCap.VertexArray);
-            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
 
-            CBO = GL.GenBuffer();
-            GL.EnableClientState(ArrayCap.ColorArray);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, CBO);
-            GL.BufferData<float>(
-                BufferTarget.ArrayBuffer,
-                (IntPtr)(colorData.Length * 4),
-                colorData,
-               BufferUsageHint.StaticDraw
-            );
-           GL.ColorPointer(3, ColorPointerType.Float, 12, 0);
+           InitShader();
         }
 
 	    // tick: renders one frame
         public void Tick()
 	    {
             a += 0.01f;
-	    }
+
+            M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
+            M *= Matrix4.CreateScale(0.75f);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
+            M *= Matrix4.CreateTranslation(0, -0.2f, -1.4f);
+            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 10f);
+        }
 
         public void RenderGL()
         {
-            int i = 0;
+            Console.WriteLine(GL.GetError()); //Give OpenTK a channel for error communication
 
-            float s = 2f / map.width;
+            int i = 0; //Hold an index counter
+            float s = 2f / map.width; //Dynamically adjust step size to ensure a fit
             for (int y = 0; y < map.height - 1; ++y)
                 for (int x = 0; x < map.width - 1; ++x)
                 {
-                    float xc = -1f + x * s;
-                    float yc = -1f + y * s;
+                    float xc = -1f + x * s; //A corrected x value
+                    float yc = -1f + y * s; //A corrected y value
 
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc;
+                    //TRIANGLE 1   3(x, y, z)
+                    vertexData[i++] = xc; 
+                    vertexData[i++] = yc; 
                     vertexData[i++] = h[x, y];
 
                     vertexData[i++] = xc;
@@ -113,6 +111,7 @@ class Game
                     vertexData[i++] = yc;
                     vertexData[i++] = h[x + 1, y];
 
+                    //TRIANGLE 2  3(x, y, z)
                     vertexData[i++] = xc + s;
                     vertexData[i++] = yc + s;
                     vertexData[i++] = h[x + 1, y + 1];
@@ -124,104 +123,32 @@ class Game
                     vertexData[i++] = xc + s;
                     vertexData[i++] = yc;
                     vertexData[i++] = h[x + 1, y];
-
-                    /*TOP
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc - s;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc - s;
-                    vertexData[i++] = yc - s;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc - s;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x, y]; */
-
-
-                    /*
-                    GL.Color3(0.5f, 0.25f, 0.75f);
-                    GL.Begin(PrimitiveType.Quads);
-                    GL.Vertex3(xc, yc, h[x, y]);
-                    GL.Vertex3(xc, yc - s, h[x, y]);
-                    GL.Vertex3(xc - s, yc - s, h[x, y]);
-                    GL.Vertex3(xc - s, yc, h[x, y]);
-                    GL.End();
-
-                    GL.Color3(1f, 0, 0);
-                    GL.Begin(PrimitiveType.Quads);
-                    GL.Vertex3(xc, yc, h[x,y]);
-                    GL.Vertex3(xc, yc -s, h[x,y]);
-                    GL.Vertex3(xc, yc - s, h[x+1,y]);
-                    GL.Vertex3(xc, yc, h[x+1,y]);
-                    GL.End(); */
-
-                    /*SIDE ONE
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc - s;
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc - s;
-                    vertexData[i++] = h[x + 1, y];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x+1, y]; */
-
-                    /*
-                    GL.Color3(0.5f, 0, 0);
-                    GL.Begin(PrimitiveType.Quads);
-                    GL.Vertex3(xc, yc, h[x, y]);
-                    GL.Vertex3(xc - s, yc, h[x, y]);
-                    GL.Vertex3(xc - s, yc, h[x, y + 1]);
-                    GL.Vertex3(xc, yc, h[x, y + 1]);
-                    GL.End(); */
-
-                    /* SIDE TWO
-                     vertexData[i++] = xc;
-                     vertexData[i++] = yc;
-                     vertexData[i++] = h[x, y];
-
-                     vertexData[i++] = xc - s;
-                     vertexData[i++] = yc;
-                     vertexData[i++] = h[x, y];
-
-                     vertexData[i++] = xc - s;
-                     vertexData[i++] = yc;
-                     vertexData[i++] = h[x, y + 1];
-
-                     vertexData[i++] = xc;
-                     vertexData[i++] = yc;
-                     vertexData[i++] = h[x, y + 1]; */
                 }
-            Console.WriteLine(GL.GetError());
 
-
-            GL.PushMatrix();
-            GL.Scale(new Vector3(0.75f));
-            GL.Translate(0, -0.4f, 0);
-            GL.Rotate(-120, 1, 0, 0);
-            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData<float>(
-                BufferTarget.ArrayBuffer,
+            //Dynamically update the vertex buffer
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
+            GL.BufferData<float>
+                (BufferTarget.ArrayBuffer,
                 (IntPtr)(vertexData.Length * 4),
-                vertexData,
+                vertexData, 
                 BufferUsageHint.StaticDraw
-            );
-            GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);
-            GL.PopMatrix();
+             );
+            //Note that the color pointer is still valid and will also be used
 
+            GL.UseProgram(programID); //Use the shaders
+            GL.UniformMatrix4(uniform_mview, false, ref M); //Transform with Matrix M
+            GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);  //Draw the vertices
+
+        }
+
+        void LoadShader(String name, ShaderType type, int program, out int ID)
+        {
+            ID = GL.CreateShader(type);
+            using (StreamReader sr = new StreamReader(name))
+                GL.ShaderSource(ID, sr.ReadToEnd());
+            GL.CompileShader(ID);
+            GL.AttachShader(program, ID);
+            Console.WriteLine(GL.GetShaderInfoLog(ID));
         }
 
         int CalculateColor(int r, int g, int b)
@@ -264,6 +191,43 @@ class Game
             KeyPress = Keyboard.GetState();
         }
 
+        void InitShader()
+        {
+            vsID = GL.CreateShader(ShaderType.VertexShader);  //Init the Vertex Shader
+            fsID = GL.CreateShader(ShaderType.FragmentShader); //Init the Fragment Shader
+            programID = GL.CreateProgram();
+            LoadShader("../../shaders/vs.glsl",
+             ShaderType.VertexShader, programID, out vsID);
+            LoadShader("../../shaders/fs.glsl",
+             ShaderType.FragmentShader, programID, out fsID);
+            GL.LinkProgram(programID);
+
+            attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
+            attribute_vcol = GL.GetAttribLocation(programID, "vColor");
+            uniform_mview = GL.GetUniformLocation(programID, "M");
+
+            vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer
+            GL.VertexAttribPointer(attribute_vpos, 3,    //Get the vertex pointer from that buffer
+             VertexAttribPointerType.Float,
+            false, 0, 0
+             );
+
+            vbo_col = GL.GenBuffer();       //Generate a color buffer
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_col); //Bind the buffer
+            GL.BufferData<float>(BufferTarget.ArrayBuffer,    //Color data is static and therefore fill here once
+             (IntPtr)(colorData.Length * 4),
+            colorData, BufferUsageHint.StaticDraw
+             );
+            GL.VertexAttribPointer(attribute_vcol, 3,       //Get the color pointer from that buffer
+             VertexAttribPointerType.Float,
+            false, 0, 0
+             );
+
+            GL.EnableVertexAttribArray(attribute_vpos);     //Enable vertex drawing
+            GL.EnableVertexAttribArray(attribute_vcol);     //Enable color mapping
+        }
+
 }
 
 } // namespace Template5
@@ -274,49 +238,49 @@ for (int y = 0; y < 256; ++y)
     for (int x = 0; x < 256; ++x)
         screen.Plot(x + offset.x, y + offset.y, CalculateColor(x, y, 0));
         */
- /*
+/*
 //An aesthetically pleasing checker pattern background
 screen.Clear(0);
-            for (int y = 0; y<screen.height; ++y)
-                for (int x = 0; x<screen.width; ++x)
-                    screen.Plot(x, y, (x ^ y)%256);
+           for (int y = 0; y<screen.height; ++y)
+               for (int x = 0; x<screen.width; ++x)
+                   screen.Plot(x, y, (x ^ y)%256);
 
-            HandleKeyBoard(); //update keyboard status
+           HandleKeyBoard(); //update keyboard status
 screen.Print("Function Plotting", 2, 2, 0xffffff );
-            screen.Line(2, 20, 160, 20, 0xff0000);
-            screen.Print("f(x) = Sin(x) + Sin(5x)", 2, 24, 0xffffff);
+           screen.Line(2, 20, 160, 20, 0xff0000);
+           screen.Print("f(x) = Sin(x) + Sin(5x)", 2, 24, 0xffffff);
 
-            //This will plot the func PlottedLine by connecting straight lines
-            //between arbitrarily small values to create the illusion of a small line;
-            float stepSize = rangeX / screen.width;
-            for(float x = -rangeX; x<rangeX; x += stepSize)
-            {
-                float y1 = func.Function(x); //first y value
+           //This will plot the func PlottedLine by connecting straight lines
+           //between arbitrarily small values to create the illusion of a small line;
+           float stepSize = rangeX / screen.width;
+           for(float x = -rangeX; x<rangeX; x += stepSize)
+           {
+               float y1 = func.Function(x); //first y value
 float y2 = func.Function(x + stepSize); //second y value
 int drawX1 = TX(x, rangeX, centerX); //convert x to pixel value
 int drawY1 = TY(y1, rangeY, centerY); //conver y to pixel value;
 int drawX2 = TX(x + stepSize, rangeX, centerX); //second x value
 int drawY2 = TY(y2, rangeY, centerY);  //second y value
 screen.Line(drawX1, drawY1, drawX2, drawY2, 0xffff00); //plot a line between to the points
-            }
+           }
 
-            if (KeyPress.IsKeyDown(Key.Left))
-                func.translation += TRANSLATION_SPEED;
+           if (KeyPress.IsKeyDown(Key.Left))
+               func.translation += TRANSLATION_SPEED;
 
-            if (KeyPress.IsKeyDown(Key.Right))
-                func.translation -= TRANSLATION_SPEED;
+           if (KeyPress.IsKeyDown(Key.Right))
+               func.translation -= TRANSLATION_SPEED;
 
-            if (KeyPress.IsKeyDown(Key.A))
-            {
-                rangeX += ZOOM_SPEED;
-                rangeY += ZOOM_SPEED;
-            }
+           if (KeyPress.IsKeyDown(Key.A))
+           {
+               rangeX += ZOOM_SPEED;
+               rangeY += ZOOM_SPEED;
+           }
 
-            if (KeyPress.IsKeyDown(Key.Z))
-            {
-                rangeX -= ZOOM_SPEED;
-                rangeY -= ZOOM_SPEED;
-            }
+           if (KeyPress.IsKeyDown(Key.Z))
+           {
+               rangeX -= ZOOM_SPEED;
+               rangeY -= ZOOM_SPEED;
+           }
 */
 
 
@@ -336,3 +300,102 @@ screen.Line(rx1, ry1, rx2, ry2, c);
 screen.Line(rx2, ry2, rx3, ry3, c);
 screen.Line(rx3, ry3, rx4, ry4, c);
 screen.Line(rx4, ry4, rx1, ry1, c); */
+
+
+/*TOP
+vertexData[i++] = xc;
+vertexData[i++] = yc;
+vertexData[i++] = h[x, y];
+
+vertexData[i++] = xc;
+vertexData[i++] = yc - s;
+vertexData[i++] = h[x, y];
+
+vertexData[i++] = xc - s;
+vertexData[i++] = yc - s;
+vertexData[i++] = h[x, y];
+
+vertexData[i++] = xc - s;
+vertexData[i++] = yc;
+vertexData[i++] = h[x, y]; */
+
+
+/*
+GL.Color3(0.5f, 0.25f, 0.75f);
+GL.Begin(PrimitiveType.Quads);
+GL.Vertex3(xc, yc, h[x, y]);
+GL.Vertex3(xc, yc - s, h[x, y]);
+GL.Vertex3(xc - s, yc - s, h[x, y]);
+GL.Vertex3(xc - s, yc, h[x, y]);
+GL.End();
+
+GL.Color3(1f, 0, 0);
+GL.Begin(PrimitiveType.Quads);
+GL.Vertex3(xc, yc, h[x,y]);
+GL.Vertex3(xc, yc -s, h[x,y]);
+GL.Vertex3(xc, yc - s, h[x+1,y]);
+GL.Vertex3(xc, yc, h[x+1,y]);
+GL.End(); */
+
+/*SIDE ONE
+vertexData[i++] = xc;
+vertexData[i++] = yc;
+vertexData[i++] = h[x, y];
+
+vertexData[i++] = xc;
+vertexData[i++] = yc - s;
+vertexData[i++] = h[x, y];
+
+vertexData[i++] = xc;
+vertexData[i++] = yc - s;
+vertexData[i++] = h[x + 1, y];
+
+vertexData[i++] = xc;
+vertexData[i++] = yc;
+vertexData[i++] = h[x+1, y]; */
+
+/*
+GL.Color3(0.5f, 0, 0);
+GL.Begin(PrimitiveType.Quads);
+GL.Vertex3(xc, yc, h[x, y]);
+GL.Vertex3(xc - s, yc, h[x, y]);
+GL.Vertex3(xc - s, yc, h[x, y + 1]);
+GL.Vertex3(xc, yc, h[x, y + 1]);
+GL.End(); */
+
+/* SIDE TWO
+ vertexData[i++] = xc;
+ vertexData[i++] = yc;
+ vertexData[i++] = h[x, y];
+
+ vertexData[i++] = xc - s;
+ vertexData[i++] = yc;
+ vertexData[i++] = h[x, y];
+
+ vertexData[i++] = xc - s;
+ vertexData[i++] = yc;
+ vertexData[i++] = h[x, y + 1];
+
+ vertexData[i++] = xc;
+ vertexData[i++] = yc;
+ vertexData[i++] = h[x, y + 1]; */
+
+
+/*
+VBO = GL.GenBuffer(); //Generate a vertex buffer
+GL.EnableClientState(ArrayCap.VertexArray); //Notify OpenTK that we will use a vertex array
+GL.BindBuffer(BufferTarget.ArrayBuffer, VBO); //Bind the buffer (needed for making the pointer)
+GL.VertexPointer(3, VertexPointerType.Float, 12, 0); //Make a vertex pointer
+//Data will be filled dynamically in the RenderGL() function.
+
+CBO = GL.GenBuffer();  //Generate a color buffer
+GL.EnableClientState(ArrayCap.ColorArray); //Notify OpenTK that we will use a color array
+GL.BindBuffer(BufferTarget.ArrayBuffer, CBO); //Bind the buffer
+GL.BufferData<float>(                       //The color data is constant, so we'll set this once
+BufferTarget.ArrayBuffer,           
+(IntPtr)(colorData.Length * 4),         //Length of the array in bytes
+colorData,
+BufferUsageHint.StaticDraw
+);
+GL.ColorPointer(3, ColorPointerType.Float, 12, 0);   //Finally, make the color pointer
+*/
