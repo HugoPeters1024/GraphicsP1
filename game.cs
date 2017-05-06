@@ -71,6 +71,7 @@ class Game
                         }
                      }
 
+            InitVertex();
            InitShader();
         }
 
@@ -90,49 +91,6 @@ class Game
         {
             Console.WriteLine(GL.GetError()); //Give OpenTK a channel for error communication
 
-            int i = 0; //Hold an index counter
-            float s = 2f / map.width; //Dynamically adjust step size to ensure a fit
-            for (int y = 0; y < map.height - 1; ++y)
-                for (int x = 0; x < map.width - 1; ++x)
-                {
-                    float xc = -1f + x * s; //A corrected x value
-                    float yc = -1f + y * s; //A corrected y value
-
-                    //TRIANGLE 1   3(x, y, z)
-                    vertexData[i++] = xc; 
-                    vertexData[i++] = yc; 
-                    vertexData[i++] = h[x, y];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc + s;
-                    vertexData[i++] = h[x, y + 1];
-
-                    vertexData[i++] = xc + s;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x + 1, y];
-
-                    //TRIANGLE 2  3(x, y, z)
-                    vertexData[i++] = xc + s;
-                    vertexData[i++] = yc + s;
-                    vertexData[i++] = h[x + 1, y + 1];
-
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc + s;
-                    vertexData[i++] = h[x, y + 1];
-
-                    vertexData[i++] = xc + s;
-                    vertexData[i++] = yc;
-                    vertexData[i++] = h[x + 1, y];
-                }
-
-            //Dynamically update the vertex buffer
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
-            GL.BufferData<float>
-                (BufferTarget.ArrayBuffer,
-                (IntPtr)(vertexData.Length * 4),
-                vertexData, 
-                BufferUsageHint.StaticDraw
-             );
             //Note that the color pointer is still valid and will also be used
 
             GL.UseProgram(programID); //Use the shaders
@@ -208,6 +166,13 @@ class Game
 
             vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer
+                                                              //Dynamically update the vertex buffer
+            GL.BufferData<float>
+                (BufferTarget.ArrayBuffer,
+                (IntPtr)(vertexData.Length * 4),
+                vertexData,
+                BufferUsageHint.StaticDraw
+             );
             GL.VertexAttribPointer(attribute_vpos, 3,    //Get the vertex pointer from that buffer
              VertexAttribPointerType.Float,
             false, 0, 0
@@ -226,6 +191,44 @@ class Game
 
             GL.EnableVertexAttribArray(attribute_vpos);     //Enable vertex drawing
             GL.EnableVertexAttribArray(attribute_vcol);     //Enable color mapping
+        }
+
+        void InitVertex()
+        {
+            int i = 0; //Hold an index counter
+            float s = 2f / map.width; //Dynamically adjust step size to ensure a fit
+            for (int y = 0; y < map.height - 1; ++y)
+                for (int x = 0; x < map.width - 1; ++x)
+                {
+                    float xc = -1f + x * s; //A corrected x value
+                    float yc = -1f + y * s; //A corrected y value
+
+                    //TRIANGLE 1   3(x, y, z)
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc + s;
+                    vertexData[i++] = h[x, y + 1];
+
+                    vertexData[i++] = xc + s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x + 1, y];
+
+                    //TRIANGLE 2  3(x, y, z)
+                    vertexData[i++] = xc + s;
+                    vertexData[i++] = yc + s;
+                    vertexData[i++] = h[x + 1, y + 1];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc + s;
+                    vertexData[i++] = h[x, y + 1];
+
+                    vertexData[i++] = xc + s;
+                    vertexData[i++] = yc;
+                    vertexData[i++] = h[x + 1, y];
+                }
         }
 
 }
