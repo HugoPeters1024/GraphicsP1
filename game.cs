@@ -16,7 +16,10 @@ class Game
         Surface map;
         float[,] h;
         float[] vertexData, vertexNormalData, colorData;
+
         public float rotateSpeed = 1.0f;
+        public float zoom = 0.75f;
+        public Vector3 translation = new Vector3(0, -0.2f, -1.4f);
 
         int programID;
         int vsID, fsID;
@@ -81,9 +84,9 @@ class Game
             a += (0.01f * rotateSpeed);
 
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
-            M *= Matrix4.CreateScale(0.75f);
+            M *= Matrix4.CreateScale(zoom);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
-            M *= Matrix4.CreateTranslation(0, -0.2f, -1.4f);
+            M *= Matrix4.CreateTranslation(translation);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 10f);
         }
 

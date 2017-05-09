@@ -42,8 +42,14 @@ namespace Template
 			// called once per frame; app logic
 			var keyboard = OpenTK.Input.Keyboard.GetState();
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-            if (keyboard[OpenTK.Input.Key.W]) game.rotateSpeed += 0.05f;
-            if (keyboard[OpenTK.Input.Key.S]) game.rotateSpeed -= 0.05f;
+            if (keyboard[OpenTK.Input.Key.D]) game.rotateSpeed += 0.05f;
+            if (keyboard[OpenTK.Input.Key.A]) game.rotateSpeed -= 0.05f;
+            if (keyboard[OpenTK.Input.Key.W]) game.zoom += 0.01f;
+            if (keyboard[OpenTK.Input.Key.S]) game.zoom -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Right]) game.translation.X -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Left]) game.translation.X += 0.01f;
+            if (keyboard[OpenTK.Input.Key.Up]) game.translation.Y -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Down]) game.translation.Y += 0.01f;
         }
 		protected override void OnRenderFrame( FrameEventArgs e )
 		{
