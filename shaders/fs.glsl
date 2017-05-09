@@ -4,7 +4,7 @@ in vec3 normal;
 out vec4 outputColor;
 void main()
 {
- vec3 lightSource = vec3(0.707, 0, 0.707);
+ vec3 lightSource = vec3(1, 1, 1);
  float f = dot(lightSource, normal);
  outputColor = color * f;
 }

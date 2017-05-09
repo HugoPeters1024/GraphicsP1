@@ -12,5 +12,5 @@ void main()
 {
   gl_Position = M * vec4( vPosition, 1.0 );
   color = vec4( vColor, 1.0);
-  normal = vec3(abs( vec4(vNormal, 1.0) * M));
+  normal = abs(vNormal);
 }
