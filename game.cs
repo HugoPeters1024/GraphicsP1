@@ -229,13 +229,13 @@ class Game
                     vertexData[i++] = yc + s;
                     vertexData[i++] = h[x + 1, y + 1];
 
-                    vertexData[i++] = xc;
-                    vertexData[i++] = yc + s;
-                    vertexData[i++] = h[x, y + 1];
-
                     vertexData[i++] = xc + s;
                     vertexData[i++] = yc;
-                    vertexData[i++] = h[x + 1, y];
+                    vertexData[i++] = h[x+1, y];
+
+                    vertexData[i++] = xc;
+                    vertexData[i++] = yc + s;
+                    vertexData[i++] = h[x, y+1];
                 }
 
             i = 0;
