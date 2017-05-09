@@ -12,3 +12,10 @@ C:\Users\Hugo\Google Drive\Graphics\P1\bin\Debug\template.exe
 C:\Users\Hugo\Google Drive\Graphics\P1\bin\Debug\template.pdb
 C:\Users\Hugo\Google Drive\Graphics\P1\bin\Debug\OpenTK.dll
 C:\Users\Hugo\Google Drive\Graphics\P1\obj\Debug\template.csprojResolveAssemblyReference.cache
+S:\GraphicsP1\bin\Debug\template.exe.config
+S:\GraphicsP1\bin\Debug\template.exe
+S:\GraphicsP1\bin\Debug\template.pdb
+S:\GraphicsP1\bin\Debug\OpenTK.dll
+S:\GraphicsP1\obj\Debug\template.csprojResolveAssemblyReference.cache
+S:\GraphicsP1\obj\Debug\template.exe
+S:\GraphicsP1\obj\Debug\template.pdb

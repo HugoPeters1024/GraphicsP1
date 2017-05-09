@@ -12,11 +12,11 @@ namespace Template {
 class Game
 {
         OpenTKApp app;
-        KeyboardState KeyPress, PrevKeyPress;
         float a;
         Surface map;
         float[,] h;
         float[] vertexData, vertexNormalData, colorData;
+        public float rotateSpeed = 1.0f;
 
         int programID;
         int vsID, fsID;
@@ -41,7 +41,15 @@ class Game
 	    public void Init()
         {
             a = 0f; //Transformation angle
-            map = new Surface("../../assets/heightmap3.png");
+            /* 
+             * Good heightmaps:
+             * heightmap.png
+             * heightmap3.png
+             * heightmap7.png
+             * heightmap8.png
+             * heightmap9.png
+             */
+            map = new Surface("../../assets/heightmap7.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
@@ -70,7 +78,7 @@ class Game
 	    // tick: renders one frame
         public void Tick()
 	    {
-            a += 0.01f;
+            a += (0.01f * rotateSpeed);
 
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateScale(0.75f);
@@ -132,13 +140,6 @@ class Game
             y += (range/2) - centerY; //Correct again for the Cartesian coordinate system
             y *= screen.height / range; //Mulitply the unit line by the screen height over the range to get a pixel coordinate
             return (int)y;
-        }
-
-        void HandleKeyBoard()
-        {
-            PrevKeyPress = KeyPress;
-            //Get the current state
-            KeyPress = Keyboard.GetState();
         }
 
         void InitShader()
