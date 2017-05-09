@@ -16,14 +16,16 @@ class Game
         float a;
         Surface map;
         float[,] h;
-        float[] vertexData, colorData;
+        float[] vertexData, vertexNormalData, colorData;
 
         int programID;
         int vsID, fsID;
-        int attribute_vpos, 
+        int attribute_vpos,
+            attribute_vnorm,
             attribute_vcol, 
             uniform_mview;
         int vbo_pos,
+            vbo_norm,
             vbo_col;
 
         Matrix4 M;
@@ -46,6 +48,7 @@ class Game
                     h[x, y] = ((float)(map.pixels[x + map.width * y] & 255)) / 256f;
 
             vertexData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3]; //2 triangles * 3 vertices * 3 coordinates
+            vertexNormalData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3]; //2 triangles * 3 vertices * 3 coordinates
             colorData = new float[(map.width - 1) * (map.height - 1) * 2 * 3 * 3];  //2 traingles * 3 vertices * 3 color values
 
             //Fill the color array
@@ -55,23 +58,12 @@ class Game
                     for (int n=0; n<2; ++n)   //Two triangles
                         for (int v = 0; v < 3; ++v) //Three vertices
                         {
-                        switch((x^y)%2 == 0) //For a nice pattern to be able to distinct the model spacially
-                        {
-                            case false:  //Sometimes purple
-                                colorData[i++] = 0.4f;
+                            colorData[i++] = 0.4f;
                                 colorData[i++] = 0f;
                                 colorData[i++] = 0.6f;
-                                break;
-
-                            case true:  //Sometimes red
-                                colorData[i++] = 1f;
-                                colorData[i++] = 0f;
-                                colorData[i++] = 0f;
-                                break;
                         }
-                     }
 
-            InitVertex();
+           InitVertex();
            InitShader();
         }
 
@@ -161,12 +153,13 @@ class Game
             GL.LinkProgram(programID);
 
             attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
+            attribute_vnorm = GL.GetAttribLocation(programID, "vNormal");
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
             uniform_mview = GL.GetUniformLocation(programID, "M");
 
             vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer
-                                                              //Dynamically update the vertex buffer
+                                                              
             GL.BufferData<float>
                 (BufferTarget.ArrayBuffer,
                 (IntPtr)(vertexData.Length * 4),
@@ -177,6 +170,20 @@ class Game
              VertexAttribPointerType.Float,
             false, 0, 0
              );
+
+            vbo_norm = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_norm);
+            GL.BufferData<float>
+                (BufferTarget.ArrayBuffer,
+                (IntPtr)(vertexNormalData.Length * 4),
+                vertexNormalData,
+                BufferUsageHint.StaticDraw
+             );
+            GL.VertexAttribPointer(attribute_vnorm, 3,    //Get the vertex pointer from that buffer
+             VertexAttribPointerType.Float,
+            false, 0, 0
+             );
+
 
             vbo_col = GL.GenBuffer();       //Generate a color buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_col); //Bind the buffer
@@ -191,6 +198,7 @@ class Game
 
             GL.EnableVertexAttribArray(attribute_vpos);     //Enable vertex drawing
             GL.EnableVertexAttribArray(attribute_vcol);     //Enable color mapping
+            GL.EnableVertexAttribArray(attribute_vnorm);
         }
 
         void InitVertex()
@@ -228,6 +236,38 @@ class Game
                     vertexData[i++] = xc + s;
                     vertexData[i++] = yc;
                     vertexData[i++] = h[x + 1, y];
+                }
+
+            i = 0;
+            for (int y = 0; y < map.height - 1; ++y)
+                for (int x = 0; x < map.width - 1; ++x)
+                {
+                    for (int n = 0; n < 2; ++n)
+                    {
+                        //float f = (float)Math.Sqrt(vertexData[i] * vertexData[i] + vertexData[i + 1] * vertexData[i + 1] + vertexData[i + 2] * vertexData[i + 2]);
+                        Vector3[] point = new Vector3[3];
+                        for (int z = 0; z < 3; ++z)
+                        {
+                            point[z] = new Vector3(vertexData[i + z*3], vertexData[i+1 + z*3], vertexData[i+2 + z*3]);
+                        }
+                        Vector3 v1 = (point[1] - point[0]);
+                        v1.Normalize();
+                        Vector3 v2 = (point[2] - point[0]);
+                        v2.Normalize();
+
+
+                        Vector3 normal = new Vector3(
+                            v1.Y * v2.Z - v2.Y * v1.Z,
+                            (v1.X * v2.Z - v2.X * v1.Z) * -1,
+                            v1.X * v2.Y - v2.X * v1.Y
+                            );
+                        //normal.Normalize();
+
+                        //Console.WriteLine(normal);
+
+                        for (int z = 0; z < 9; ++z, ++i)
+                            vertexNormalData[i] = normal[z % 3];
+                    }
                 }
         }
 
