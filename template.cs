@@ -42,17 +42,47 @@ namespace Template
 			// called once per frame; app logic
 			var keyboard = OpenTK.Input.Keyboard.GetState();
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-            if (keyboard[OpenTK.Input.Key.Q]) game.intensity -= 0.01f;
-            if (keyboard[OpenTK.Input.Key.E]) game.intensity += 0.01f;
 
-            if (keyboard[OpenTK.Input.Key.D]) game.rotateSpeed += 0.05f;
-            if (keyboard[OpenTK.Input.Key.A]) game.rotateSpeed -= 0.05f;
+            //Rotation controls
+            if (keyboard[OpenTK.Input.Key.R]) game.autoRotate = true;
+            if (keyboard[OpenTK.Input.Key.F])
+            {
+                game.rotation = game.a;
+                game.autoRotate = false;
+            }
+            if (game.autoRotate)
+            {
+                if (keyboard[OpenTK.Input.Key.D]) game.rotateSpeed += 0.05f;
+                if (keyboard[OpenTK.Input.Key.A]) game.rotateSpeed -= 0.05f;
+            }
+            else
+            {
+                if (keyboard[OpenTK.Input.Key.D]) game.rotation += 0.05f;
+                if (keyboard[OpenTK.Input.Key.A]) game.rotation -= 0.05f;
+            }
+
+            //Map/camera controls
             if (keyboard[OpenTK.Input.Key.W]) game.zoom += 0.01f;
             if (keyboard[OpenTK.Input.Key.S]) game.zoom -= 0.01f;
             if (keyboard[OpenTK.Input.Key.Right]) game.translation.X -= 0.01f;
             if (keyboard[OpenTK.Input.Key.Left]) game.translation.X += 0.01f;
-            if (keyboard[OpenTK.Input.Key.Up]) game.translation.Z -= 0.01f;
-            if (keyboard[OpenTK.Input.Key.Down]) game.translation.Z += 0.01f;
+            if (keyboard[OpenTK.Input.Key.Up]) game.translation.Z += 0.01f;
+            if (keyboard[OpenTK.Input.Key.Down]) game.translation.Z -= 0.01f;
+
+            //Light controls
+            if (keyboard[OpenTK.Input.Key.Q]) game.intensity -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.E]) game.intensity += 0.01f;
+            if (keyboard[OpenTK.Input.Key.J]) game.Lpos.X += 0.05f;
+            if (keyboard[OpenTK.Input.Key.L]) game.Lpos.X -= 0.05f;
+            if (keyboard[OpenTK.Input.Key.K]) game.Lpos.Y += 0.05f;
+            if (keyboard[OpenTK.Input.Key.I]) game.Lpos.Y -= 0.05f;
+            if (keyboard[OpenTK.Input.Key.U]) game.Lpos.Z += 0.05f;
+            if (keyboard[OpenTK.Input.Key.H]) game.Lpos.Z -= 0.05f;
+
+            //Effect controls
+            if (keyboard[OpenTK.Input.Key.Z]) game.GoLoco = 2;
+            if (keyboard[OpenTK.Input.Key.X]) game.GoLoco = 1;
+            if (keyboard[OpenTK.Input.Key.C]) game.GoLoco = 0;
         }
 		protected override void OnRenderFrame( FrameEventArgs e )
 		{

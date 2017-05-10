@@ -12,12 +12,14 @@ namespace Template {
 class Game
 {
         OpenTKApp app;
-        float a;
+        public float a;
         Surface map;
         float[,] h;
         float[] vertexData, vertexNormalData, colorData;
 
+        public bool autoRotate = true;
         public float rotateSpeed = 1.0f;
+        public float rotation = 0.0f;
         public float zoom = 0.75f;
         public Vector3 translation = new Vector3(0, -0.2f, -1.4f);
         float animation;
@@ -31,14 +33,16 @@ class Game
             uniform_ldir,
             uniform_lpos,
             uniform_intensity,
-            uniform_animation;
+            uniform_animation,
+            uniform_goloco;
         int vbo_pos,
             vbo_norm,
             vbo_col;
 
         Matrix4 M;
-        Vector3 Ldir, Lpos;
+        public Vector3 Ldir, Lpos;
         public float intensity;
+        public float GoLoco = 0;
 
 
         // member variables
@@ -92,7 +96,14 @@ class Game
 	    // tick: renders one frame
         public void Tick()
 	    {
-            a += 0.01f * rotateSpeed;
+            if (autoRotate)
+            {
+                a += 0.01f * rotateSpeed;
+            }
+            else
+            {
+                a = rotation;
+            }
             animation = (float)Math.Sin(5*a);
 
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
@@ -116,6 +127,7 @@ class Game
             GL.ProgramUniform3(programID, uniform_lpos, Lpos.X, Lpos.Y, Lpos.Z);
             GL.ProgramUniform1(programID, uniform_intensity, intensity);
             GL.ProgramUniform1(programID, uniform_animation, animation);
+            GL.ProgramUniform1(programID, uniform_goloco, GoLoco);
             GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);  //Draw the vertices
 
         }
@@ -182,6 +194,7 @@ class Game
             uniform_lpos = GL.GetUniformLocation(programID, "Lpos");
             uniform_intensity = GL.GetUniformLocation(programID, "intensity");
             uniform_animation = GL.GetUniformLocation(programID, "animation");
+            uniform_goloco = GL.GetUniformLocation(programID, "GoLoco");
 
             vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer
