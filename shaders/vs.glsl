@@ -16,7 +16,7 @@ uniform float animation;
 
 void main()
 {
- float a = (1.0/3.0) * (1 + sin((vPosition.x * 5) - animation));
+ float a = 0.5 * (1 + sin((vPosition.x * 5) - animation));
 
   vec3 vPos = vec3(vPosition.x, vPosition.y, vPosition.z * a);
 
