@@ -106,8 +106,6 @@ class Game
             }
             animation += 0.05f;
 
-            Lpos = new Vector3(0, 0, 2f + 0.5f*(float)Math.Sin(animation));
-
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateScale(zoom);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
