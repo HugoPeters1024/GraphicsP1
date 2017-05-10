@@ -54,19 +54,12 @@ class Game
 	    // initialize
 	    public void Init()
         {
-            animation = 1f;
+            Console.WriteLine("Check the readme.txt file for controls and information.");
+            animation = 0f;
             intensity = 1f;
-            Ldir = (new Vector3(0, 0, 0)).Normalized();
-            Lpos = new Vector3(0, 0, 2f);
+            //Ldir = (new Vector3(0, 0, 0)).Normalized(); 
+            Lpos = new Vector3(0, 0, 2f);  //Define the position of the light
             a = 0f; //Transformation angle
-            /* 
-             * Good heightmaps:
-             * heightmap.png
-             * heightmap3.png
-             * heightmap7.png
-             * heightmap8.png
-             * heightmap9.png
-             */
             map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
@@ -84,9 +77,9 @@ class Game
                     for (int n=0; n<2; ++n)   //Two triangles
                         for (int v = 0; v < 3; ++v) //Three vertices
                         {
-                            colorData[i++] = 0.4f;
-                            colorData[i++] = 0.2f;
-                            colorData[i++] = 0.6f;
+                            colorData[i++] = 0.4f;  //R
+                            colorData[i++] = 0.2f;  //G
+                            colorData[i++] = 0.6f;  //B
                         }
 
            InitVertex();
@@ -96,16 +89,14 @@ class Game
 	    // tick: renders one frame
         public void Tick()
 	    {
-            if (autoRotate)
-            {
+            if (autoRotate)  //evaluate the rotation
                 a += 0.01f * rotateSpeed;
-            }
             else
-            {
                 a = rotation;
-            }
-            animation += 0.05f;
 
+            animation += 0.05f; //wave translation
+
+            //Define a transformation matrix for the shader
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateScale(zoom);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
@@ -115,17 +106,15 @@ class Game
 
         public void RenderGL()
         {
-            Console.WriteLine(GL.GetError()); //Give OpenTK a channel for error communication
-
-            //Note that the color pointer is still valid and will also be used
+            //Console.WriteLine(GL.GetError()); //Give OpenTK a channel for error communication
 
             GL.UseProgram(programID); //Use the shaders
             GL.UniformMatrix4(uniform_mview, false, ref M); //Transform with Matrix M
-            GL.ProgramUniform3(programID, uniform_ldir, Ldir.X, Ldir.Y, Ldir.Z);
-            GL.ProgramUniform3(programID, uniform_lpos, Lpos.X, Lpos.Y, Lpos.Z);
-            GL.ProgramUniform1(programID, uniform_intensity, intensity);
-            GL.ProgramUniform1(programID, uniform_animation, animation);
-            GL.ProgramUniform1(programID, uniform_goloco, GoLoco);
+            GL.ProgramUniform3(programID, uniform_ldir, Ldir.X, Ldir.Y, Ldir.Z); //Give the Ldir to the shader [NOW OBSOLETE, Ldir will be calculated individually using Lpos]
+            GL.ProgramUniform3(programID, uniform_lpos, Lpos.X, Lpos.Y, Lpos.Z); //Pass te light position
+            GL.ProgramUniform1(programID, uniform_intensity, intensity); //Pass the intensity value
+            GL.ProgramUniform1(programID, uniform_animation, animation);  //Pass the animation value;
+            GL.ProgramUniform1(programID, uniform_goloco, GoLoco);  //Pass the animation ON/OFF bool
             GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);  //Draw the vertices
 
         }
@@ -145,34 +134,11 @@ class Game
             return (r << 16) + (g << 8) + b;
         }
 
-        /// <summary>
-        /// converts values of x from -range/2 ... range/2 to 0 ...640
-        /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
-        int TX(float x, float range, float centerX=0)
-        {
-            x *= Math.Min((float)app.Height / screen.height, (float)app.Width / screen.width); //Mutliply by the mininum of the width or height ratio to ensure a fit
-            x *= (float)app.Height / app.Width; //Multiply by the aspect ratio. (Where app is the OpenTKApp that represents the screen)
-            x += (range/2) + centerX; //CenterX representing the Cartesian coordinate system with screen center as origin (-range, range)
-            x *= screen.width / range; //Mulitply the unit line by the screen width over the range to get a pixel coordinate
-            return (int)x;
-        }
 
         /// <summary>
-        /// converts values of y from -range/2 ... range/2 to 0 ... 400 (and negates y)
+        /// All that is needed to initialize the shader.
+        /// This involves loading vs.glsl and fs.glsl to create a vertex- and fragment shader respectively.
         /// </summary>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        int TY(float y, float range, float centerY=0)
-        {
-            y *= Math.Min((float)app.Height / screen.height, (float)app.Width / screen.width); //Mutliply by the mininum of the width or height ratio to ensure a fit
-            y = -y; //Reverse y
-            y += (range/2) - centerY; //Correct again for the Cartesian coordinate system
-            y *= screen.height / range; //Mulitply the unit line by the screen height over the range to get a pixel coordinate
-            return (int)y;
-        }
-
         void InitShader()
         {
             vsID = GL.CreateShader(ShaderType.VertexShader);  //Init the Vertex Shader
@@ -208,7 +174,7 @@ class Game
             false, 0, 0
              );
 
-            vbo_norm = GL.GenBuffer();
+            vbo_norm = GL.GenBuffer();  //Create a buffer for the normal stream
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_norm);
             GL.BufferData<float>
                 (BufferTarget.ArrayBuffer,
@@ -279,31 +245,29 @@ class Game
             for (int y = 0; y < map.height - 1; ++y)
                 for (int x = 0; x < map.width - 1; ++x)
                 {
-                    for (int n = 0; n < 2; ++n)
+                    for (int n = 0; n < 2; ++n) //Two triangles
                     {
-                        //float f = (float)Math.Sqrt(vertexData[i] * vertexData[i] + vertexData[i + 1] * vertexData[i + 1] + vertexData[i + 2] * vertexData[i + 2]);
                         Vector3[] point = new Vector3[3];
-                        for (int z = 0; z < 3; ++z)
+                        for (int z = 0; z < 3; ++z) //three vertices
                         {
-                            point[z] = new Vector3(vertexData[i + z*3], vertexData[i+1 + z*3], vertexData[i+2 + z*3]);
+                            point[z] = new Vector3(vertexData[i + z*3], vertexData[i+1 + z*3], vertexData[i+2 + z*3]);  //Get the vertices of the triangles as a vector
                         }
-                        Vector3 v1 = (point[1] - point[0]);
-                        v1.Normalize();
-                        Vector3 v2 = (point[2] - point[0]);
-                        v2.Normalize();
+                        Vector3 v1 = (point[1] - point[0]); //Get a vector along one axis
+                        v1.Normalize(); //Normalize it
+                        Vector3 v2 = (point[2] - point[0]); //Get a vector along a second axis
+                        v2.Normalize(); //Normalize as wel
 
 
+                        //Calculate the cross product to get a vector that is perpendicular to the triangle as a plane
                         Vector3 normal = new Vector3(
                             v1.Y * v2.Z - v2.Y * v1.Z,
                             (v1.X * v2.Z - v2.X * v1.Z) * -1,
                             v1.X * v2.Y - v2.X * v1.Y
                             );
-                        normal.Normalize();
+                        normal.Normalize(); //Normalize this as well
 
-                        //Console.WriteLine(normal);
-
-                        for (int z = 0; z < 9; ++z, ++i)
-                            vertexNormalData[i] = normal[z % 3];
+                        for (int z = 0; z < 9; ++z, ++i) //3x3 coordinates 
+                            vertexNormalData[i] = normal[z % 3]; //Copy the normal data to every vertice identically. The whole triangle shares one normal
                     }
                 }
         }
