@@ -12,7 +12,6 @@ namespace Template {
 class Game
 {
         OpenTKApp app;
-        KeyboardState KeyPress, PrevKeyPress;
         float a;
         Surface map;
         float[,] h;
@@ -56,6 +55,14 @@ class Game
             Ldir = (new Vector3(0, 0, 0)).Normalized();
             Lpos = new Vector3(0, 0, 2f);
             a = 0f; //Transformation angle
+            /* 
+             * Good heightmaps:
+             * heightmap.png
+             * heightmap3.png
+             * heightmap7.png
+             * heightmap8.png
+             * heightmap9.png
+             */
             map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
@@ -154,13 +161,6 @@ class Game
             y += (range/2) - centerY; //Correct again for the Cartesian coordinate system
             y *= screen.height / range; //Mulitply the unit line by the screen height over the range to get a pixel coordinate
             return (int)y;
-        }
-
-        void HandleKeyBoard()
-        {
-            PrevKeyPress = KeyPress;
-            //Get the current state
-            KeyPress = Keyboard.GetState();
         }
 
         void InitShader()
@@ -287,7 +287,7 @@ class Game
                             (v1.X * v2.Z - v2.X * v1.Z) * -1,
                             v1.X * v2.Y - v2.X * v1.Y
                             );
-                        //normal.Normalize();
+                        normal.Normalize();
 
                         //Console.WriteLine(normal);
 
