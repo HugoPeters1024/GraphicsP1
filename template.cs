@@ -61,7 +61,7 @@ namespace Template
                 if (keyboard[OpenTK.Input.Key.A]) game.rotation -= 0.05f;
             }
 
-            //Map/camera controls
+            //Camera controls
             if (keyboard[OpenTK.Input.Key.W]) game.zoom += 0.01f;
             if (keyboard[OpenTK.Input.Key.S]) game.zoom -= 0.01f;
             if (keyboard[OpenTK.Input.Key.Right]) game.translation.X -= 0.01f;
@@ -70,8 +70,8 @@ namespace Template
             if (keyboard[OpenTK.Input.Key.Down]) game.translation.Z -= 0.01f;
 
             //Light controls
-            if (keyboard[OpenTK.Input.Key.Q]) game.intensity -= 0.01f;
-            if (keyboard[OpenTK.Input.Key.E]) game.intensity += 0.01f;
+            if (keyboard[OpenTK.Input.Key.O]) game.intensity -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.P]) game.intensity += 0.01f;
             if (keyboard[OpenTK.Input.Key.J]) game.Lpos.X += 0.05f;
             if (keyboard[OpenTK.Input.Key.L]) game.Lpos.X -= 0.05f;
             if (keyboard[OpenTK.Input.Key.K]) game.Lpos.Y += 0.05f;
