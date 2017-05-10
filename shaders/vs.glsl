@@ -11,14 +11,15 @@ uniform mat4 M;
 uniform vec3 Ldir;
 uniform vec3 Lpos;
 uniform float intensity;
+uniform float animation;
 
 
 void main()
 {
-  gl_Position = M * vec4( vPosition, 1.0 );
+  gl_Position = M * vec4( vPosition.x, vPosition.y, vPosition.z * animation, 1.0 );
   color = vec4( vColor, 1.0);
-  normal = vec3( (M * vec4( vNormal, 1.0) ) );
-  vec3 lightDistance = Lpos - vPosition;
+  normal = vec3( (M * vec4( vNormal * animation, 1.0) ) );
+  vec3 lightDistance = Lpos - vec3(vPosition.x, vPosition.y, vPosition.z * animation);
   falloff = intensity/dot(lightDistance, lightDistance);
   lightDirection = normalize(lightDistance);
 }

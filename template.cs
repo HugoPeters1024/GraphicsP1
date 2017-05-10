@@ -44,6 +44,15 @@ namespace Template
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
             if (keyboard[OpenTK.Input.Key.Q]) game.intensity -= 0.01f;
             if (keyboard[OpenTK.Input.Key.E]) game.intensity += 0.01f;
+
+            if (keyboard[OpenTK.Input.Key.D]) game.rotateSpeed += 0.05f;
+            if (keyboard[OpenTK.Input.Key.A]) game.rotateSpeed -= 0.05f;
+            if (keyboard[OpenTK.Input.Key.W]) game.zoom += 0.01f;
+            if (keyboard[OpenTK.Input.Key.S]) game.zoom -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Right]) game.translation.X -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Left]) game.translation.X += 0.01f;
+            if (keyboard[OpenTK.Input.Key.Up]) game.translation.Z -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.Down]) game.translation.Z += 0.01f;
         }
 		protected override void OnRenderFrame( FrameEventArgs e )
 		{

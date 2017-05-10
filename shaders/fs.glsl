@@ -11,5 +11,5 @@ uniform vec3 Lpos;
 void main()
 {
  float f = dot(lightDirection, normal);
- outputColor = color * f * falloff;
+ outputColor = color * f * sqrt(f) * falloff;
 }

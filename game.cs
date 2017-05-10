@@ -18,6 +18,11 @@ class Game
         float[,] h;
         float[] vertexData, vertexNormalData, colorData;
 
+        public float rotateSpeed = 1.0f;
+        public float zoom = 0.75f;
+        public Vector3 translation = new Vector3(0, -0.2f, -1.4f);
+        float animation;
+
         int programID;
         int vsID, fsID;
         int attribute_vpos,
@@ -26,7 +31,8 @@ class Game
             uniform_mview,
             uniform_ldir,
             uniform_lpos,
-            uniform_intensity;
+            uniform_intensity,
+            uniform_animation;
         int vbo_pos,
             vbo_norm,
             vbo_col;
@@ -45,9 +51,10 @@ class Game
 	    // initialize
 	    public void Init()
         {
-            intensity = 1f;
+            animation = 1f;
+            intensity = 2f;
             Ldir = (new Vector3(0, 0, 0)).Normalized();
-            Lpos = new Vector3(0, 0, 1f);
+            Lpos = new Vector3(0, 0, 2f);
             a = 0f; //Transformation angle
             map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
@@ -78,12 +85,13 @@ class Game
 	    // tick: renders one frame
         public void Tick()
 	    {
-            a += 0.01f;
+            a += 0.01f * rotateSpeed;
+            animation = (float)Math.Sin(5*a);
 
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
-            M *= Matrix4.CreateScale(0.75f);
+            M *= Matrix4.CreateScale(zoom);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
-            M *= Matrix4.CreateTranslation(0, -0.2f, -1.4f);
+            M *= Matrix4.CreateTranslation(translation);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 10f);
 
             Ldir = new Vector3(3f * (float)Math.Sin(5 * a), -(float)Math.Sin(a), 1).Normalized();
@@ -100,6 +108,7 @@ class Game
             GL.ProgramUniform3(programID, uniform_ldir, Ldir.X, Ldir.Y, Ldir.Z);
             GL.ProgramUniform3(programID, uniform_lpos, Lpos.X, Lpos.Y, Lpos.Z);
             GL.ProgramUniform1(programID, uniform_intensity, intensity);
+            GL.ProgramUniform1(programID, uniform_animation, animation);
             GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);  //Draw the vertices
 
         }
@@ -172,6 +181,7 @@ class Game
             uniform_ldir = GL.GetUniformLocation(programID, "Ldir");
             uniform_lpos = GL.GetUniformLocation(programID, "Lpos");
             uniform_intensity = GL.GetUniformLocation(programID, "intensity");
+            uniform_animation = GL.GetUniformLocation(programID, "animation");
 
             vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer
