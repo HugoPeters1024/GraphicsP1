@@ -111,8 +111,6 @@ class Game
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
             M *= Matrix4.CreateTranslation(translation);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 10f);
-
-            Ldir = new Vector3(3f * (float)Math.Sin(5 * a), -(float)Math.Sin(a), 1).Normalized();
         }
 
         public void RenderGL()
