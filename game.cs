@@ -52,7 +52,7 @@ class Game
              * heightmap8.png
              * heightmap9.png
              */
-            map = new Surface("../../assets/heightmap7.png");
+            map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
@@ -265,7 +265,7 @@ class Game
                             (v1.X * v2.Z - v2.X * v1.Z) * -1,
                             v1.X * v2.Y - v2.X * v1.Y
                             );
-                        //normal.Normalize();
+                        normal.Normalize();
 
                         //Console.WriteLine(normal);
 
