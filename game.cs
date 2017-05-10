@@ -86,7 +86,7 @@ class Game
         public void Tick()
 	    {
             a += 0.01f * rotateSpeed;
-            animation = (float)Math.Sin(5*a);
+            animation += 0.05f;
 
             M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateScale(zoom);

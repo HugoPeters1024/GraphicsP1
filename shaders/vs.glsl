@@ -16,10 +16,14 @@ uniform float animation;
 
 void main()
 {
-  gl_Position = M * vec4( vPosition.x, vPosition.y, vPosition.z * animation, 1.0 );
+ float a = 0.5 * (1 + sin((vPosition.x * 5) - animation));
+
+  vec3 vPos = vec3(vPosition.x, vPosition.y, vPosition.z * a);
+
+  gl_Position = M * vec4( vPos, 1.0 );
   color = vec4( vColor, 1.0);
-  normal = vec3( (M * vec4( vNormal * animation, 1.0) ) );
-  vec3 lightDistance = Lpos - vec3(vPosition.x, vPosition.y, vPosition.z * animation);
+  normal = vec3( (M * vec4( vNormal * a, 1.0) ) );
+  vec3 lightDistance = Lpos - vPos;
   falloff = intensity/dot(lightDistance, lightDistance);
   lightDirection = normalize(lightDistance);
 }
