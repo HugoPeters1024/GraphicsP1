@@ -1,10 +1,15 @@
 #version 330
 in vec4 color;
 in vec3 normal;
+in vec3 lightDirection;
+in float falloff;
 out vec4 outputColor;
+
+uniform vec3 Ldir;
+uniform vec3 Lpos;
+
 void main()
 {
- vec3 lightSource = vec3(0.577, 0.577, 0.577);
- float f = abs( dot(lightSource, normal) );
- outputColor = color * f;
+ float f = dot(lightDirection, normal);
+ outputColor = color * f * falloff;
 }

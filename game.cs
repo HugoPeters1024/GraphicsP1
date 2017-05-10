@@ -22,13 +22,18 @@ class Game
         int vsID, fsID;
         int attribute_vpos,
             attribute_vnorm,
-            attribute_vcol, 
-            uniform_mview;
+            attribute_vcol,
+            uniform_mview,
+            uniform_ldir,
+            uniform_lpos,
+            uniform_intensity;
         int vbo_pos,
             vbo_norm,
             vbo_col;
 
         Matrix4 M;
+        Vector3 Ldir, Lpos;
+        public float intensity;
 
 
         // member variables
@@ -40,6 +45,9 @@ class Game
 	    // initialize
 	    public void Init()
         {
+            intensity = 1f;
+            Ldir = (new Vector3(0, 0, 0)).Normalized();
+            Lpos = new Vector3(0, 0, 1f);
             a = 0f; //Transformation angle
             map = new Surface("../../assets/heightmap3.png");
             h = new float[map.width, map.height];
@@ -59,8 +67,8 @@ class Game
                         for (int v = 0; v < 3; ++v) //Three vertices
                         {
                             colorData[i++] = 0.4f;
-                                colorData[i++] = 0f;
-                                colorData[i++] = 0.6f;
+                            colorData[i++] = 0.2f;
+                            colorData[i++] = 0.6f;
                         }
 
            InitVertex();
@@ -77,6 +85,8 @@ class Game
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), -1f);
             M *= Matrix4.CreateTranslation(0, -0.2f, -1.4f);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 10f);
+
+            Ldir = new Vector3(3f * (float)Math.Sin(5 * a), -(float)Math.Sin(a), 1).Normalized();
         }
 
         public void RenderGL()
@@ -87,6 +97,9 @@ class Game
 
             GL.UseProgram(programID); //Use the shaders
             GL.UniformMatrix4(uniform_mview, false, ref M); //Transform with Matrix M
+            GL.ProgramUniform3(programID, uniform_ldir, Ldir.X, Ldir.Y, Ldir.Z);
+            GL.ProgramUniform3(programID, uniform_lpos, Lpos.X, Lpos.Y, Lpos.Z);
+            GL.ProgramUniform1(programID, uniform_intensity, intensity);
             GL.DrawArrays(PrimitiveType.Triangles, 0, (map.width-1) * (map.height-1) * 2 * 3);  //Draw the vertices
 
         }
@@ -156,6 +169,9 @@ class Game
             attribute_vnorm = GL.GetAttribLocation(programID, "vNormal");
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
             uniform_mview = GL.GetUniformLocation(programID, "M");
+            uniform_ldir = GL.GetUniformLocation(programID, "Ldir");
+            uniform_lpos = GL.GetUniformLocation(programID, "Lpos");
+            uniform_intensity = GL.GetUniformLocation(programID, "intensity");
 
             vbo_pos = GL.GenBuffer();  //Generate a vertex buffer
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos); //Bind the buffer

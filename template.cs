@@ -42,7 +42,9 @@ namespace Template
 			// called once per frame; app logic
 			var keyboard = OpenTK.Input.Keyboard.GetState();
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-		}
+            if (keyboard[OpenTK.Input.Key.Q]) game.intensity -= 0.01f;
+            if (keyboard[OpenTK.Input.Key.E]) game.intensity += 0.01f;
+        }
 		protected override void OnRenderFrame( FrameEventArgs e )
 		{
             // prepare for generic OpenGL rendering
