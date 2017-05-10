@@ -20,7 +20,7 @@ void main()
   float a;
   if(GoLoco == 2)
   {
-    a = animation;
+    a = 0.5 * (1 + sin((vPosition.x * 5) - animation));
   }
   else if (GoLoco == 1)
   {
@@ -30,10 +30,13 @@ void main()
   {
     a = 1;
   }
-  gl_Position = M * vec4( vPosition.x, vPosition.y, vPosition.z * a, 1.0 );
+
+  vec3 vPos = vec3(vPosition.x, vPosition.y, vPosition.z * a);
+
+  gl_Position = M * vec4( vPos, 1.0 );
   color = vec4( vColor, 1.0);
   normal = vec3( (M * vec4( vNormal * a, 1.0) ) );
-  vec3 lightDistance = Lpos - vec3(vPosition.x, vPosition.y, vPosition.z * a);
+  vec3 lightDistance = Lpos - vPos;
   falloff = intensity/dot(lightDistance, lightDistance);
   lightDirection = normalize(lightDistance);
 }
