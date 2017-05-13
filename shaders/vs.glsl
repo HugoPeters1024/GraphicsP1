@@ -34,8 +34,15 @@ void main()
   vec3 vPos = vec3(vPosition.x, vPosition.y, vPosition.z * a);
 
   gl_Position = M * vec4( vPos, 1.0 );
-  color = vec4( vColor, 1.0);
-  normal = vec3( (M * vec4( vNormal * a, 1.0) ) );
+  if(vPos.z > 0.6)
+	{color = vec4( 1, 1, 1, 1);}
+  else if (vPos.z > 0.16)
+	{color = vec4( 0.5, 0.5, 0.5, 0.5);}
+  else if (vPos.z > 0.015)
+   	{color = vec4( vColor, 0.7);}
+  else
+	{color = vec4( 0, 0, 0.5, 1.0);}
+  normal = max( vec3(0, 0, 0) , vec3( (M * vec4( vNormal * a, 1.0) ) ));
   vec3 lightDistance = Lpos - vPos;
   falloff = intensity/dot(lightDistance, lightDistance);
   lightDirection = normalize(lightDistance);

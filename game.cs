@@ -56,11 +56,14 @@ class Game
         {
             Console.WriteLine("Check the readme.txt file for controls and information.");
             animation = 0f;
-            intensity = 1f;
+            intensity = 2f;
             //Ldir = (new Vector3(0, 0, 0)).Normalized(); 
-            Lpos = new Vector3(0, 0, 2f);  //Define the position of the light
+            Lpos = new Vector3(0, 0, 3f);  //Define the position of the light
             a = 0f; //Transformation angle
-            map = new Surface("../../assets/heightmap3.png");
+            /*
+             * usable heightmaps: 0 - 6
+             */
+            map = new Surface("../../assets/heightmap2.png");
             h = new float[map.width, map.height];
             for (int y = 0; y < map.height; ++y)
                 for (int x = 0; x < map.width; ++x)
@@ -77,9 +80,9 @@ class Game
                     for (int n=0; n<2; ++n)   //Two triangles
                         for (int v = 0; v < 3; ++v) //Three vertices
                         {
-                            colorData[i++] = 0.4f;  //R
-                            colorData[i++] = 0.2f;  //G
-                            colorData[i++] = 0.6f;  //B
+                            colorData[i++] = 0.29f;  //R
+                            colorData[i++] = 0.36f;  //G
+                            colorData[i++] = 0.14f;  //B
                         }
 
            InitVertex();
